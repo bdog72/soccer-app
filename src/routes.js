@@ -7,14 +7,22 @@ import PublicRoutes from './Components/authRoutes/publicRoutes';
 
 import Home from './Components/home';
 import SignIn from './Components/signin';
-import Dashboard from './Components/admin/Dashboard';
 
+import Dashboard from './Components/admin/Dashboard';
 import AdminMatches from './Components/admin/matches';
+import AddEditMatch from './Components/admin/matches/addEditMatch';
 
 const Routes = props => {
     return (
         <Layout>
             <Switch>
+                <PrivateRoutes
+                    {...props}
+                    restricted={true}
+                    path="/admin_matches/edit_match/:id"
+                    exact
+                    component={AddEditMatch}
+                />
                 <PrivateRoutes
                     {...props}
                     restricted={true}
