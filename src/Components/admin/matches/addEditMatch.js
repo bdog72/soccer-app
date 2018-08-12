@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import AdminLayout from '../../../Hoc/AdminLayout';
 import FormField from '../../ui/formFields';
-// import { validate } from '../../ui/misc';
+import { validate } from '../../ui/misc';
+
+import { firebaseTeams, firebaseDB, firebaseMatches } from '../../../firebase';
+import { firebaseLooper } from '../../ui/misc';
 
 class AddEditMatch extends Component {
     state = {
@@ -160,6 +163,129 @@ class AddEditMatch extends Component {
             }
         }
     };
+
+    updateForm(element) {
+        const newFormdata = { ...this.state.formdata };
+        const newElement = { ...newFormdata[element.id] };
+
+        newElement.value = element.event.target.value;
+
+        let validData = validate(newElement);
+        newElement.valid = validData[0];
+        newElement.validationMessage = validData[1];
+
+        newFormdata[element.id] = newElement;
+
+        this.setState({
+            formError: false,
+            formdata: newFormdata
+        });
+    }
+
+    updateFields(match, teamOptions, teams, type, matchId) {
+        const newFormdata = {
+            ...this.state.formdata
+        };
+        for (let key in newFormdata) {
+            if (match) {
+                newFormdata[key].value = match[key];
+                newFormdata[key].valid = true;
+            }
+            if (key === 'local' || key === 'away') {
+                newFormdata[key].config.options = teamOptions;
+            }
+        }
+        this.setState({
+            matchId,
+            formType: type,
+            formdata: newFormdata,
+            teams
+        });
+    }
+
+    componentDidMount() {
+        const matchId = this.props.match.params.id;
+        const getTeams = (match, type) => {
+            firebaseTeams.once('value').then(snapshot => {
+                const teams = firebaseLooper(snapshot);
+                const teamOptions = [];
+
+                snapshot.forEach(childSnapshot => {
+                    teamOptions.push({
+                        key: childSnapshot.val().shortName,
+                        value: childSnapshot.val().shortName
+                    });
+                });
+                this.updateFields(match, teamOptions, teams, type, matchId);
+            });
+        };
+
+        if (!matchId) {
+            // Add Match
+        } else {
+            firebaseDB
+                .ref(`matches/${matchId}`)
+                .once('value')
+                .then(snapshot => {
+                    const match = snapshot.val();
+                    getTeams(match, 'Edit Match');
+                });
+        }
+    }
+
+    successForm(message) {
+        this.setState({
+            formSuccess: message
+        });
+        setTimeout(() => {
+            this.setState({
+                formSuccess: ''
+            });
+        }, 2000);
+    }
+
+    submitForm(event) {
+        event.preventDefault();
+
+        let dataToSubmit = {};
+        let formIsValid = true;
+
+        for (let key in this.state.formdata) {
+            dataToSubmit[key] = this.state.formdata[key].value;
+            formIsValid = this.state.formdata[key].valid && formIsValid;
+        }
+
+        this.state.teams.forEach(team => {
+            if (team.shortName === dataToSubmit.local) {
+                dataToSubmit['localThmb'] = team.thmb;
+            }
+            if (team.shortName === dataToSubmit.away) {
+                dataToSubmit['awayThmb'] = team.thmb;
+            }
+        });
+
+        if (formIsValid) {
+            if (this.state.formType === 'Edit Match') {
+                firebaseDB
+                    .ref(`matches/${this.state.matchId}`)
+                    .update(dataToSubmit)
+                    .then(() => {
+                        this.successForm('Updated Correctly');
+                    })
+                    .catch(e => {
+                        this.setState({
+                            formError: true
+                        });
+                    });
+            } else {
+                // Add Match
+            }
+        } else {
+            this.setState({
+                formError: true
+            });
+        }
+    }
 
     render() {
         return (
