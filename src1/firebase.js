@@ -1,7 +1,6 @@
 // import firebase from 'firebase/app'
 // import 'firebase/app'
 // import 'firebase/database'
-// import 'firebase/auth'
 
 // const config = {
 //     apiKey: "AIzaSyDYiC4o4i1r3Hge4sdXEalB10KQ9rIWyQ0",
@@ -17,14 +16,11 @@
 // const firebaseDB = firebase.database();
 // const firebaseMatches = firebaseDB.ref('matches');
 // const firebasePromotions = firebaseDB.ref('promotions');
-// const firebaseTeams = firebaseDB.ref('teams')
 
 // export {
 //     firebase,
 //     firebaseMatches,
-//     firebasePromotions,
-//     firebaseTeams,
-//     firebaseDB
+//     firebasePromotions
 // }
 import firebase from 'firebase/app';
 import 'firebase/app';

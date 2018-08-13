@@ -95,6 +95,7 @@ class Enroll extends Component {
                     this.resetFormSuccess(false);
                 }
             })
+            //this.resetFormSuccess()
         } else {
             this.setState({
                 formError: true
